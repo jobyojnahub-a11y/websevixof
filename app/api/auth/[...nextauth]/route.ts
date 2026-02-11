@@ -7,6 +7,7 @@ import { config } from "@/lib/config";
 
 const authOptions: NextAuthOptions = {
   secret: config.NEXTAUTH_SECRET,
+  url: config.NEXTAUTH_URL,
   session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({
