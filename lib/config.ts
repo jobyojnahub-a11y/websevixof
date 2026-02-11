@@ -3,7 +3,8 @@
 
 export const config = {
   // MongoDB Configuration
-  MONGODB_URI: "mongodb+srv://websevix:@websevix541600@bhanu.ur1ftos.mongodb.net/?appName=bhanu",
+  // Password me @ character ko URL encode karna padta hai: @ = %40
+  MONGODB_URI: "mongodb+srv://websevix:%40websevix541600@bhanu.ur1ftos.mongodb.net/?appName=bhanu",
   
   // NextAuth Configuration
   NEXTAUTH_URL: "https://websevix.com",
