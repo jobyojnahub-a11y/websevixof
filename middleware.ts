@@ -6,6 +6,11 @@ import { config as appConfig } from "@/lib/config";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Skip middleware for auth pages to avoid redirect loops
+  if (pathname === "/admin/auth" || pathname === "/client/auth") {
+    return NextResponse.next();
+  }
+
   const isClientArea = pathname.startsWith("/client");
   const isAdminArea = pathname.startsWith("/admin");
 
