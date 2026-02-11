@@ -5,13 +5,6 @@ const nextConfig = {
     // We'll keep linting in build; disable only if you want faster CI.
     ignoreDuringBuilds: false,
   },
-};
-
-module.exports = nextConfig;
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
   images: {
     domains: ['localhost', 'websevix.com', 'dashboard.websevix.com'],
   },
@@ -23,6 +16,6 @@ const nextConfig = {
       },
     ];
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
