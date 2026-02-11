@@ -5,7 +5,7 @@ import { User } from "@/models/User";
 import { verifyPassword } from "@/lib/auth/password";
 import { config } from "@/lib/config";
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   secret: config.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   providers: [
