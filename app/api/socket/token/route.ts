@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { signSocketToken } from "@/lib/auth/socketToken";
+import { config } from "@/lib/config";
 
 export async function GET(req: Request) {
-  const token = await getToken({ req: req as any, secret: process.env.NEXTAUTH_SECRET });
+  const token = await getToken({ req: req as any, secret: config.NEXTAUTH_SECRET });
   if (!token) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 
   const role = (token as any).role as "client" | "admin";

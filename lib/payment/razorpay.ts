@@ -1,11 +1,12 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { config } from "@/lib/config";
 
-const keyId = process.env.RAZORPAY_KEY_ID;
-const keySecret = process.env.RAZORPAY_KEY_SECRET;
+const keyId = config.RAZORPAY_KEY_ID;
+const keySecret = config.RAZORPAY_KEY_SECRET;
 
 if (!keyId || !keySecret) {
-  throw new Error("Missing Razorpay keys (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET).");
+  throw new Error("Missing Razorpay keys. Set them in lib/config.ts");
 }
 
 export const razorpay = new Razorpay({
@@ -18,18 +19,6 @@ export function verifyRazorpaySignature(orderId: string, paymentId: string, sign
   const expected = crypto.createHmac("sha256", keySecret).update(body).digest("hex");
   return expected === signature;
 }
-
-import Razorpay from 'razorpay';
-import crypto from 'crypto';
-
-// Hardcoded Razorpay credentials - update with your actual keys
-const RAZORPAY_KEY_ID = 'your-razorpay-key-id';
-const RAZORPAY_KEY_SECRET = 'your-razorpay-key-secret';
-
-const razorpay = new Razorpay({
-  key_id: RAZORPAY_KEY_ID,
-  key_secret: RAZORPAY_KEY_SECRET,
-});
 
 export interface RazorpayOrderOptions {
   amount: number; // in paise
@@ -68,7 +57,7 @@ export function verifyPaymentSignature(
   try {
     const payload = `${orderId}|${paymentId}`;
     const generatedSignature = crypto
-      .createHmac('sha256', RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', keySecret)
       .update(payload)
       .digest('hex');
 

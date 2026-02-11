@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
+import { config } from "@/lib/config";
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = config.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error("Missing MONGODB_URI. Set it in your environment variables.");
+  throw new Error("Missing MONGODB_URI. Set it in lib/config.ts");
 }
 
 type MongooseCache = {

@@ -1,10 +1,11 @@
 import nodemailer from "nodemailer";
+import { config } from "@/lib/config";
 
-const host = process.env.EMAIL_HOST;
-const port = Number(process.env.EMAIL_PORT || "587");
-const user = process.env.EMAIL_USER;
-const pass = process.env.EMAIL_PASSWORD;
-const from = process.env.EMAIL_FROM || "WebSevix <no-reply@websevix.com>";
+const host = config.EMAIL_HOST;
+const port = config.EMAIL_PORT;
+const user = config.EMAIL_USER;
+const pass = config.EMAIL_PASSWORD;
+const from = config.EMAIL_FROM;
 
 if (!host || !user || !pass) {
   // Don't crash app in dev/build; APIs will error if used without config.

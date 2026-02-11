@@ -3,8 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { connectDB } from "@/lib/db/mongoose";
 import { User } from "@/models/User";
 import { verifyPassword } from "@/lib/auth/password";
+import { config } from "@/lib/config";
 
 export const authOptions: NextAuthOptions = {
+  secret: config.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({

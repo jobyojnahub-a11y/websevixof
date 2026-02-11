@@ -17,28 +17,26 @@ git clone https://github.com/jobyojnahub-a11y/websevixof.git websevix
 cd websevix
 ```
 
-### Step 3: Environment Variables Setup करें
+### Step 3: Configuration Setup करें
+Environment variables ab code me hardcode hain. Agar kuch change karna ho to:
+
 ```bash
-nano .env.local
+nano lib/config.ts
 ```
 
-**Add these variables:**
-```
-MONGODB_URI=mongodb://localhost:27017/websevix
-NEXTAUTH_URL=https://websevix.com
-NEXTAUTH_SECRET=your-secret-key-min-32-chars-random-string
-RAZORPAY_KEY_ID=your-razorpay-key
-RAZORPAY_KEY_SECRET=your-razorpay-secret
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
-OPENAI_API_KEY=your-openai-api-key-here
-SOCKET_SECRET=your-socket-secret-min-32-chars-random-string
-```
+**File me yeh variables update karein:**
+- `MONGODB_URI` - MongoDB connection string (password update karein)
+- `NEXTAUTH_URL` - Website URL
+- `NEXTAUTH_SECRET` - NextAuth secret key
+- `RAZORPAY_KEY_ID` - Razorpay key ID
+- `RAZORPAY_KEY_SECRET` - Razorpay secret
+- `EMAIL_USER` - Email address
+- `EMAIL_PASSWORD` - Email app password
+- `OPENAI_API_KEY` - OpenAI API key (agar use ho raha ho)
+- `SOCKET_SECRET` - Socket secret (agar use ho raha ho)
 
 **nano editor:**
-- Variables type करें
+- Variables update करें
 - Save: `Ctrl + O`, `Enter`
 - Exit: `Ctrl + X`
 
