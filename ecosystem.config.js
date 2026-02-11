@@ -10,6 +10,8 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
+        NEXTAUTH_URL: 'https://websevix.com',
+        NEXTAUTH_SECRET: 'websevixofficial!!@@##$$%%^^%%$$#!!',
       },
       error_file: './logs/err.log',
       out_file: './logs/out.log',
