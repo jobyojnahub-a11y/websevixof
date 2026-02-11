@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 // MongoDB URI - same as lib/config.ts
-const MONGODB_URI = "mongodb+srv://websevix:@websevix541600@bhanu.ur1ftos.mongodb.net/?appName=bhanu";
+// Password me @ character ko URL encode karna padta hai: @ = %40
+const MONGODB_URI = "mongodb+srv://websevix:%40websevix541600@bhanu.ur1ftos.mongodb.net/?appName=bhanu";
 
 // User Schema (same as models/User.ts)
 const UserSchema = new mongoose.Schema(
