@@ -2,13 +2,15 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [stats, setStats] = useState({ totalVisitors: 0, activeConversations: 0, totalOrders: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -17,6 +19,26 @@ export default function AdminDashboard() {
       router.push("/client/dashboard");
     }
   }, [session, status, router]);
+
+  useEffect(() => {
+    if (status === "authenticated" && (session?.user as any)?.role === "admin") {
+      fetchStats();
+    }
+  }, [status, session]);
+
+  const fetchStats = async () => {
+    try {
+      const res = await fetch("/api/admin/stats");
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (status === "loading") {
     return (
@@ -55,7 +77,9 @@ export default function AdminDashboard() {
               <CardDescription>All time visitors</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">0</div>
+              <div className="text-3xl font-bold text-white">
+                {loading ? "..." : stats.totalVisitors.toLocaleString()}
+              </div>
             </CardContent>
           </Card>
 
@@ -65,7 +89,9 @@ export default function AdminDashboard() {
               <CardDescription>Currently active chats</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">0</div>
+              <div className="text-3xl font-bold text-white">
+                {loading ? "..." : stats.activeConversations.toLocaleString()}
+              </div>
             </CardContent>
           </Card>
 
@@ -75,7 +101,9 @@ export default function AdminDashboard() {
               <CardDescription>All orders</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">0</div>
+              <div className="text-3xl font-bold text-white">
+                {loading ? "..." : stats.totalOrders.toLocaleString()}
+              </div>
             </CardContent>
           </Card>
         </div>
