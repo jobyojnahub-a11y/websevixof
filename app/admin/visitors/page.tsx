@@ -82,10 +82,18 @@ export default function VisitorsPage() {
     setConnecting(visitorSessionId);
 
     try {
-      // Get socket token for admin
-      const tokenRes = await fetch("/api/socket/token");
+      // Get socket token for admin (with credentials)
+      const tokenRes = await fetch("/api/socket/token", {
+        method: "GET",
+        credentials: "include", // Important: include cookies for session
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
       if (!tokenRes.ok) {
-        throw new Error("Failed to get socket token");
+        const errorData = await tokenRes.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to get socket token: ${tokenRes.status}`);
       }
 
       const tokenData = await tokenRes.json();
