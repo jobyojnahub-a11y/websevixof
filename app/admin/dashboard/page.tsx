@@ -119,9 +119,11 @@ export default function AdminDashboard() {
               <Button variant="outline" className="w-full justify-start">
                 View All Orders
               </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Manage Conversations
-              </Button>
+              <Link href="/admin/conversations" className="w-full">
+                <Button variant="outline" className="w-full justify-start">
+                  Manage Conversations
+                </Button>
+              </Link>
               <Button variant="outline" className="w-full justify-start">
                 View Visitors
               </Button>
