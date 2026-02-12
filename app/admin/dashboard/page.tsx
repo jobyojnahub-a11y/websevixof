@@ -125,9 +125,11 @@ export default function AdminDashboard() {
                   Manage Conversations
                 </Button>
               </Link>
-              <Button variant="outline" className="w-full justify-start">
-                View Visitors
-              </Button>
+              <Link href="/admin/visitors" className="w-full">
+                <Button variant="outline" className="w-full justify-start">
+                  View Visitors
+                </Button>
+              </Link>
               <Button variant="outline" className="w-full justify-start">
                 User Management
               </Button>
