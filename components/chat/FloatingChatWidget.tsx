@@ -32,23 +32,76 @@ export function FloatingChatWidget() {
       const socket = await getSocket({ visitorSessionId: sessionId });
 
       socket.on("connection_request", (data: any) => {
-        // Show popup to visitor
-        const message = data?.message || "Have any problem? Admin wants to connect with you.";
-        const accept = window.confirm(message + "\n\nClick OK to accept or Cancel to decline.");
+        // Show proper popup to visitor
+        const message = data?.message || "Our admin wants to connect with you. Do you need any help?";
         
-        if (accept) {
+        // Create a better popup UI
+        const popup = document.createElement("div");
+        popup.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+          border: 2px solid rgba(59, 130, 246, 0.5);
+          border-radius: 16px;
+          padding: 24px;
+          z-index: 10000;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+          max-width: 400px;
+          text-align: center;
+          color: white;
+          font-family: system-ui, -apple-system, sans-serif;
+        `;
+        
+        popup.innerHTML = `
+          <div style="font-size: 48px; margin-bottom: 16px;">👋</div>
+          <h3 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 600;">Admin Connection Request</h3>
+          <p style="margin: 0 0 24px 0; color: rgba(255, 255, 255, 0.8); line-height: 1.5;">${message}</p>
+          <div style="display: flex; gap: 12px; justify-content: center;">
+            <button id="accept-btn" style="
+              background: #3b82f6;
+              color: white;
+              border: none;
+              padding: 12px 24px;
+              border-radius: 8px;
+              font-weight: 600;
+              cursor: pointer;
+              font-size: 14px;
+            ">✅ Accept</button>
+            <button id="decline-btn" style="
+              background: rgba(255, 255, 255, 0.1);
+              color: white;
+              border: 1px solid rgba(255, 255, 255, 0.2);
+              padding: 12px 24px;
+              border-radius: 8px;
+              font-weight: 600;
+              cursor: pointer;
+              font-size: 14px;
+            ">❌ Decline</button>
+          </div>
+        `;
+        
+        document.body.appendChild(popup);
+        
+        const acceptBtn = popup.querySelector("#accept-btn");
+        const declineBtn = popup.querySelector("#decline-btn");
+        
+        acceptBtn?.addEventListener("click", () => {
+          document.body.removeChild(popup);
           setOpen(true);
           setMsgs((prev) => [
             ...prev,
             { from: "admin", text: "You are now connected with admin. How can we help you?", ts: Date.now() },
           ]);
           socket.emit("connection_response", { visitorSessionId: sessionId, accepted: true });
-          
-          // Join visitor chat room
           socket.emit("join_visitor_chat", { visitorSessionId: sessionId });
-        } else {
+        });
+        
+        declineBtn?.addEventListener("click", () => {
+          document.body.removeChild(popup);
           socket.emit("connection_response", { visitorSessionId: sessionId, accepted: false });
-        }
+        });
       });
 
       socket.on("chat_open", () => setOpen(true));

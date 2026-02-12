@@ -84,40 +84,61 @@ export default function VisitorsPage() {
     try {
       // Get socket token for admin
       const tokenRes = await fetch("/api/socket/token");
-      if (!tokenRes.ok) throw new Error("Failed to get socket token");
+      if (!tokenRes.ok) {
+        throw new Error("Failed to get socket token");
+      }
 
-      const { token } = await tokenRes.ok ? await tokenRes.json() : { token: null };
-      if (!token) throw new Error("No socket token");
+      const tokenData = await tokenRes.json();
+      const token = tokenData.token;
+      
+      if (!token) {
+        throw new Error("No socket token received");
+      }
 
-      // Connect via socket.io
+      // Initialize socket connection
+      await fetch("/api/socket"); // Ensure socket server is initialized
+      
+      // Connect via socket.io with token
       const socket = await getSocket({ token });
+      
+      // Wait a bit for socket to be ready
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Send connection request to visitor
       socket.emit("admin_connect_request", {
         visitorSessionId,
-        message: "Have any problem? Admin wants to connect with you.",
+        message: "Our admin wants to connect with you. Do you need any help?",
       });
 
       // Listen for response
-      socket.on("visitor_connection_response", (data: any) => {
-        if (data.sessionId === visitorSessionId && data.accepted) {
-          alert("Visitor accepted! You can now chat with them.");
-          // Open chat interface
-          openChatWindow(visitorSessionId);
-        } else if (data.sessionId === visitorSessionId && !data.accepted) {
-          alert("Visitor declined the connection request.");
+      const responseHandler = (data: any) => {
+        if (data.sessionId === visitorSessionId) {
+          if (data.accepted) {
+            alert("✅ Visitor accepted! Opening chat...");
+            // Open chat interface
+            openChatWindow(visitorSessionId);
+          } else {
+            alert("❌ Visitor declined the connection request.");
+          }
+          socket.off("visitor_connection_response", responseHandler);
+          setConnecting(null);
         }
-        setConnecting(null);
-      });
+      };
+
+      socket.on("visitor_connection_response", responseHandler);
 
       // Timeout after 30 seconds
       setTimeout(() => {
-        setConnecting(null);
+        socket.off("visitor_connection_response", responseHandler);
+        if (connecting === visitorSessionId) {
+          alert("⏱️ Connection request timed out. Visitor did not respond.");
+          setConnecting(null);
+        }
       }, 30000);
 
     } catch (error) {
       console.error("Error connecting with visitor:", error);
-      alert("Failed to connect with visitor");
+      alert(`Failed to connect with visitor: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setConnecting(null);
     }
   };
