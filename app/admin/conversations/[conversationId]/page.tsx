@@ -19,7 +19,7 @@ export default function ConversationChatPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
-  const conversationId = params.conversationId as string;
+  const conversationId = (params?.conversationId as string) || "";
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -32,10 +32,10 @@ export default function ConversationChatPage() {
       router.push("/admin/auth");
     } else if (status === "authenticated" && (session?.user as any)?.role !== "admin") {
       router.push("/client/dashboard");
-    } else if (status === "authenticated" && conversationId) {
+    } else if (status === "authenticated" && conversationId && params?.conversationId) {
       fetchMessages();
     }
-  }, [status, session, router, conversationId]);
+  }, [status, session, router, conversationId, params]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
