@@ -16,12 +16,17 @@ export default function AdminAuthPage() {
   const onLogin = async () => {
     setLoading(true);
     setError(null);
+    // Use absolute URL for callback to prevent localhost redirect
+    const callbackUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/admin/dashboard`
+      : "/admin/dashboard";
+    
     const res = await signIn("credentials", {
       redirect: true,
       email,
       password,
       role: "admin",
-      callbackUrl: "/admin/dashboard",
+      callbackUrl: callbackUrl,
     });
     setLoading(false);
     if ((res as any)?.error) setError("Invalid admin credentials");

@@ -7,6 +7,7 @@ import { config } from "@/lib/config";
 
 const authOptions: NextAuthOptions = {
   secret: config.NEXTAUTH_SECRET,
+  trustHost: true, // Allow NextAuth to use request headers for base URL
   session: { strategy: "jwt" },
   providers: [
     CredentialsProvider({
