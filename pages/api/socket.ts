@@ -297,6 +297,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponseS
         }
       });
 
+      // Direct visitor chat (no conversation model)
+      socket.on("join_visitor_chat", (data) => {
+        const { visitorSessionId } = data || {};
+        if (!visitorSessionId) return;
+        socket.join(`visitor-chat:${visitorSessionId}`);
+      });
+
+      socket.on("send_visitor_message", async (data) => {
+        try {
+          await connectDB();
+          const { visitorSessionId, message, senderRole, senderName } = data || {};
+          if (!visitorSessionId || !message || !senderRole) return;
+
+          // Send message directly via socket (no conversation model)
+          io.to(`visitor-chat:${visitorSessionId}`).emit("receive_message", {
+            visitorSessionId,
+            message,
+            senderRole,
+            senderName,
+            timestamp: new Date(),
+          });
+
+          // Also notify admin room
+          if (senderRole === "visitor") {
+            io.to("admin-room").emit("visitor_message", {
+              visitorSessionId,
+              message,
+              senderName,
+            });
+          }
+        } catch (e) {
+          console.error("send_visitor_message error", e);
+        }
+      });
+
       socket.on("disconnect", () => {
         // no-op; client sends visitor_left explicitly
       });
