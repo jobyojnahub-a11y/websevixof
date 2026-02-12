@@ -64,13 +64,14 @@ export default function VisitorChatPage() {
 
       // Listen for messages
       socket.on("receive_message", (data: any) => {
-        if (data.visitorSessionId === sessionId) {
+        // Check if message is for this visitor session
+        if (data?.visitorSessionId === sessionId || !data.visitorSessionId) {
           setMessages((prev) => [
             ...prev,
             {
               from: data.senderRole === "admin" ? "admin" : "visitor",
-              text: data.message,
-              timestamp: Date.now(),
+              text: data.message || data.text || "",
+              timestamp: data.timestamp || Date.now(),
             },
           ]);
         }
