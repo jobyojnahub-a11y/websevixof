@@ -46,8 +46,10 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.sub = (user as any).id; // Set sub field for NextAuth
         (token as any).role = (user as any).role;
         (token as any).uid = (user as any).id;
+        (token as any).name = (user as any).name;
       }
       return token;
     },

@@ -11,10 +11,18 @@ export async function GET(req: Request) {
     }
 
     const role = (token as any).role as "client" | "admin";
-    const sub = (token as any).uid || (token as any).id || token.sub;
+    // Try multiple fields to get user ID
+    const sub = (token as any).uid || (token as any).id || token.sub || (token as any).sub;
     const name = (token as any).name as string | undefined;
 
     if (!sub) {
+      console.error("Token structure:", {
+        uid: (token as any).uid,
+        id: (token as any).id,
+        sub: token.sub,
+        role: (token as any).role,
+        allKeys: Object.keys(token),
+      });
       return NextResponse.json({ ok: false, error: "Invalid token - missing user ID" }, { status: 400 });
     }
 
