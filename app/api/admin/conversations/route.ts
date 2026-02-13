@@ -4,6 +4,8 @@ import { connectDB } from "@/lib/db/mongoose";
 import { config } from "@/lib/config";
 import { Conversation } from "@/models/Conversation";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   try {
     const token = await getToken({ req: req as any, secret: config.NEXTAUTH_SECRET });

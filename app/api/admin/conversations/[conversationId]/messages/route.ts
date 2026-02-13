@@ -5,6 +5,8 @@ import { config } from "@/lib/config";
 import { Conversation } from "@/models/Conversation";
 import { Message } from "@/models/Message";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   req: Request,
   { params }: { params: { conversationId: string } }

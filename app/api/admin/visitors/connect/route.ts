@@ -5,6 +5,8 @@ import { config } from "@/lib/config";
 import { VisitorSession } from "@/models/VisitorSession";
 import { Conversation } from "@/models/Conversation";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
   try {
     const token = await getToken({ req: req as any, secret: config.NEXTAUTH_SECRET });
