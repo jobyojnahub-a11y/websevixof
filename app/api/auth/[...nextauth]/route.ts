@@ -39,6 +39,7 @@ const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.fullName,
           role: user.role,
+          sub: user._id.toString(), // Also set sub field
         } as any;
       },
     }),

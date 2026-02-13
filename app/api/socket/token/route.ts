@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { signSocketToken } from "@/lib/auth/socketToken";
 import { config } from "@/lib/config";
+import { connectDB } from "@/lib/db/mongoose";
+import { User } from "@/models/User";
 
 export async function GET(req: Request) {
   try {
@@ -11,15 +13,31 @@ export async function GET(req: Request) {
     }
 
     const role = (token as any).role as "client" | "admin";
-    // Try multiple fields to get user ID
-    const sub = (token as any).uid || (token as any).id || token.sub || (token as any).sub;
+    const email = (token as any).email || token.email;
     const name = (token as any).name as string | undefined;
+
+    // Try to get user ID from token
+    let sub = (token as any).uid || (token as any).id || token.sub || (token as any).sub;
+
+    // If still no ID, get it from database using email
+    if (!sub && email) {
+      try {
+        await connectDB();
+        const user = await User.findOne({ email }).select("_id").lean();
+        if (user) {
+          sub = user._id.toString();
+        }
+      } catch (dbError) {
+        console.error("Database error:", dbError);
+      }
+    }
 
     if (!sub) {
       console.error("Token structure:", {
         uid: (token as any).uid,
         id: (token as any).id,
         sub: token.sub,
+        email: email,
         role: (token as any).role,
         allKeys: Object.keys(token),
       });
