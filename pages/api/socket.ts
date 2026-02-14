@@ -44,8 +44,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponseS
       socket.data.identity = identity;
 
       // rooms
-      socket.join(`identity:${identity.role}:${identity.sub}`);
+      const roomName = `identity:${identity.role}:${identity.sub}`;
+      socket.join(roomName);
       if (identity.role === "admin") socket.join("admin-room");
+      
+      console.log("Socket connected:", { 
+        role: identity.role, 
+        sub: identity.sub, 
+        roomName,
+        socketId: socket.id 
+      });
 
       socket.on("visitor_connected", async (data) => {
         try {
@@ -180,12 +188,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponseS
           const { visitorSessionId: sid, message } = data || {};
           if (!sid) return;
 
+          console.log("Admin connect request:", { 
+            adminId: identity.sub, 
+            visitorSessionId: sid, 
+            message 
+          });
+
           await VisitorSession.findOneAndUpdate(
             { sessionId: sid },
             { $set: { adminConnectionOffered: true, adminConnectionResponse: "pending" } }
           );
 
-          io.to(`identity:visitor:${sid}`).emit("connection_request", {
+          const roomName = `identity:visitor:${sid}`;
+          console.log("Emitting connection_request to room:", roomName);
+          
+          // Get all sockets in the room to debug
+          const socketsInRoom = await io.in(roomName).fetchSockets();
+          console.log("Sockets in visitor room:", socketsInRoom.length);
+
+          io.to(roomName).emit("connection_request", {
             visitorSessionId: sid,
             message: message || "Hi! Need any help?",
           });
