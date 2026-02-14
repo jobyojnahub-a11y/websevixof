@@ -47,16 +47,24 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.sub = (user as any).id; // Set sub field for NextAuth
-        (token as any).role = (user as any).role;
-        (token as any).uid = (user as any).id;
-        (token as any).name = (user as any).name;
+        // Set all required fields explicitly
+        token.sub = (user as any).id || (user as any).sub; // User ID for NextAuth
+        token.email = (user as any).email || token.email; // Email
+        token.name = (user as any).name || (user as any).fullName || token.name; // Name
+        (token as any).role = (user as any).role; // Role
+        (token as any).uid = (user as any).id || (user as any).sub; // User ID (custom field)
+        (token as any).id = (user as any).id || (user as any).sub; // User ID (alternative)
+      }
+      // Ensure sub is always set, even on subsequent calls
+      if (!token.sub && (token as any).uid) {
+        token.sub = (token as any).uid;
       }
       return token;
     },
     async session({ session, token }) {
       (session.user as any).role = (token as any).role;
-      (session.user as any).id = (token as any).uid;
+      (session.user as any).id = (token as any).uid || token.sub;
+      session.user.sub = token.sub; // Ensure sub is in session
       return session;
     },
   },
