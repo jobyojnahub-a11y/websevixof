@@ -27,7 +27,15 @@ export async function GET(req: Request) {
     }
 
     // Log full token structure for debugging
-    console.log("Token retrieved successfully. Token keys:", Object.keys(token));
+    console.log("Token retrieved successfully. Full token:", JSON.stringify({
+      keys: Object.keys(token),
+      sub: token.sub,
+      email: token.email,
+      name: token.name,
+      uid: (token as any).uid,
+      id: (token as any).id,
+      role: (token as any).role,
+    }, null, 2));
 
     // Extract fields from token
     const role = (token as any).role as "client" | "admin";
@@ -36,6 +44,8 @@ export async function GET(req: Request) {
 
     // Try multiple ways to get user ID - check all possible fields
     let sub = (token as any).uid || (token as any).id || token.sub;
+    
+    console.log("Extracted values:", { role, email, name, sub });
 
     // Log token structure for debugging (only in development or when sub is missing)
     if (!sub) {
@@ -83,8 +93,20 @@ export async function GET(req: Request) {
 
     // Check if role exists
     if (!role) {
-      console.error("Token missing role:", { email, sub, tokenKeys: Object.keys(token) });
-      return NextResponse.json({ ok: false, error: "Invalid token - missing role" }, { status: 400 });
+      console.error("Token missing role. Token structure:", JSON.stringify(token, null, 2));
+      return NextResponse.json({ 
+        ok: false, 
+        error: "Invalid token - missing role",
+        debug: {
+          hasUid: !!(token as any).uid,
+          hasId: !!(token as any).id,
+          hasSub: !!token.sub,
+          hasEmail: !!email,
+          hasRole: !!role,
+          hasName: !!name,
+          tokenKeys: Object.keys(token),
+        }
+      }, { status: 400 });
     }
 
     // Generate socket token

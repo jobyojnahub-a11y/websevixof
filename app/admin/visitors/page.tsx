@@ -93,7 +93,10 @@ export default function VisitorsPage() {
       
       if (!tokenRes.ok) {
         const errorData = await tokenRes.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to get socket token: ${tokenRes.status}`);
+        console.error("Socket token error response:", errorData);
+        const errorMsg = errorData.error || `Failed to get socket token: ${tokenRes.status}`;
+        const debugInfo = errorData.debug ? `\nDebug: ${JSON.stringify(errorData.debug, null, 2)}` : '';
+        throw new Error(`${errorMsg}${debugInfo}`);
       }
 
       const tokenData = await tokenRes.json();
