@@ -10,6 +10,11 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
   try {
     console.log("Socket token request received");
+    console.log("Request headers:", {
+      cookie: req.headers.get("cookie") ? "Present" : "Missing",
+      userAgent: req.headers.get("user-agent")?.substring(0, 50) + "...",
+      origin: req.headers.get("origin")
+    });
     
     // Use getToken which works reliably in App Router API routes
     const token = await getToken({ 
@@ -19,7 +24,16 @@ export async function GET(req: Request) {
 
     if (!token) {
       console.error("No token found - user not authenticated");
-      return NextResponse.json({ ok: false, error: "Unauthorized - Please login first" }, { status: 401 });
+      console.error("Available headers:", Object.fromEntries(req.headers.entries()));
+      return NextResponse.json({ 
+        ok: false, 
+        error: "Unauthorized - Please login first",
+        debug: {
+          hasCookies: !!req.headers.get("cookie"),
+          cookieHeader: req.headers.get("cookie")?.substring(0, 100) + "...",
+          secret: config.NEXTAUTH_SECRET ? "Present" : "Missing"
+        }
+      }, { status: 401 });
     }
 
     console.log("Token found, keys:", Object.keys(token));
