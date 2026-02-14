@@ -38,6 +38,15 @@ export async function GET(req: Request) {
       }
     } else {
       console.log("Token found via getToken");
+      // If token exists but email is missing, try to get from session
+      if (!token.email && !(token as any).email) {
+        console.log("Token missing email, trying getServerSession...");
+        const session = await getServerSession(authOptions);
+        if (session?.user?.email) {
+          token.email = session.user.email;
+          console.log("Email fetched from session:", token.email);
+        }
+      }
     }
 
     if (!token) {
@@ -66,8 +75,9 @@ export async function GET(req: Request) {
 
     console.log("Initial extracted values:", { role, email, name, sub });
 
-    // If email exists but other fields are missing, fetch from database
-    if (email && (!sub || !role)) {
+    // CRITICAL: If ANY field is missing, fetch from database using email
+    // Email is the most reliable identifier in NextAuth tokens
+    if (email) {
       try {
         await connectDB();
         const user = await User.findOne({ email: email.toLowerCase().trim() })
@@ -75,22 +85,31 @@ export async function GET(req: Request) {
           .lean();
         
         if (user) {
-          if (!sub && user._id) {
+          // Always use database values if they exist (more reliable)
+          if (user._id) {
             sub = user._id.toString();
             console.log("User ID fetched from DB:", sub);
           }
-          if (!role && user.role) {
+          if (user.role) {
             role = user.role as "client" | "admin";
             console.log("Role fetched from DB:", role);
           }
-          if (!name && user.fullName) {
+          if (user.fullName) {
             name = user.fullName;
             console.log("Name fetched from DB:", name);
           }
+          // Ensure email is set
+          if (!email && user.email) {
+            email = user.email;
+          }
+        } else {
+          console.error("User not found in database for email:", email);
         }
       } catch (dbError) {
         console.error("Database error:", dbError);
       }
+    } else {
+      console.error("CRITICAL: No email found in token! Cannot fetch user from database.");
     }
 
     // Final validation
