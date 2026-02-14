@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth";
 import { signSocketToken } from "@/lib/auth/socketToken";
 import { config } from "@/lib/config";
 import { connectDB } from "@/lib/db/mongoose";
 import { User } from "@/models/User";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export const dynamic = 'force-dynamic';
 
@@ -13,11 +15,30 @@ export async function GET(req: Request) {
     const cookieHeader = req.headers.get("cookie");
     console.log("Socket token request - Cookie header present:", !!cookieHeader);
 
-    // Get token from NextAuth
-    const token = await getToken({ 
+    // Try getToken first (works better in API routes)
+    let token = await getToken({ 
       req: req as any, 
       secret: config.NEXTAUTH_SECRET
     });
+
+    // If token is null, try getServerSession as fallback
+    if (!token) {
+      console.log("getToken returned null, trying getServerSession...");
+      const session = await getServerSession(authOptions);
+      if (session) {
+        console.log("Session found via getServerSession");
+        token = {
+          sub: (session.user as any).sub || (session.user as any).id,
+          email: session.user.email || null,
+          name: session.user.name || null,
+          role: (session.user as any).role,
+          uid: (session.user as any).id || (session.user as any).sub,
+          id: (session.user as any).id || (session.user as any).sub,
+        } as any;
+      }
+    } else {
+      console.log("Token found via getToken");
+    }
 
     if (!token) {
       console.error("No token found - user not authenticated");
