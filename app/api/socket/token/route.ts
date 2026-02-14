@@ -5,7 +5,7 @@ import { signSocketToken } from "@/lib/auth/socketToken";
 import { config } from "@/lib/config";
 import { connectDB } from "@/lib/db/mongoose";
 import { User } from "@/models/User";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth/options";
 
 export const dynamic = 'force-dynamic';
 
