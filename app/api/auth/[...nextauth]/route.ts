@@ -64,7 +64,7 @@ const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       (session.user as any).role = (token as any).role;
       (session.user as any).id = (token as any).uid || token.sub;
-      session.user.sub = token.sub; // Ensure sub is in session
+      (session.user as any).sub = token.sub; // Ensure sub is in session
       return session;
     },
   },
