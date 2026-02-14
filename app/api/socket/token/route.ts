@@ -59,48 +59,46 @@ export async function GET(req: Request) {
     }, null, 2));
 
     // Extract fields from token
-    const role = (token as any).role as "client" | "admin";
-    const email = (token as any).email || token.email;
-    const name = (token as any).name || token.name;
-
-    // Try multiple ways to get user ID - check all possible fields
+    let role = (token as any).role as "client" | "admin";
+    let email = (token as any).email || token.email;
+    let name = (token as any).name || token.name;
     let sub = (token as any).uid || (token as any).id || token.sub;
-    
-    console.log("Extracted values:", { role, email, name, sub });
 
-    // Log token structure for debugging (only in development or when sub is missing)
-    if (!sub) {
-      console.log("Token structure (missing sub):", {
-        uid: (token as any).uid,
-        id: (token as any).id,
-        sub: token.sub,
-        email: email,
-        role: role,
-        name: name,
-        allKeys: Object.keys(token),
-      });
-    }
+    console.log("Initial extracted values:", { role, email, name, sub });
 
-    // If still no ID, get it from database using email
-    if (!sub && email) {
+    // If email exists but other fields are missing, fetch from database
+    if (email && (!sub || !role)) {
       try {
         await connectDB();
-        const user = await User.findOne({ email: email.toLowerCase().trim() }).select("_id").lean();
-        if (user && user._id) {
-          sub = user._id.toString();
-          console.log("User ID fetched from DB using email:", sub);
+        const user = await User.findOne({ email: email.toLowerCase().trim() })
+          .select("_id fullName role email")
+          .lean();
+        
+        if (user) {
+          if (!sub && user._id) {
+            sub = user._id.toString();
+            console.log("User ID fetched from DB:", sub);
+          }
+          if (!role && user.role) {
+            role = user.role as "client" | "admin";
+            console.log("Role fetched from DB:", role);
+          }
+          if (!name && user.fullName) {
+            name = user.fullName;
+            console.log("Name fetched from DB:", name);
+          }
         }
       } catch (dbError) {
-        console.error("Database error while fetching user:", dbError);
+        console.error("Database error:", dbError);
       }
     }
 
-    // Final check - if still no sub, return error
+    // Final validation
     if (!sub) {
-      console.error("Failed to get user ID. Full token structure:", JSON.stringify(token, null, 2));
+      console.error("CRITICAL: No user ID found. Token:", JSON.stringify(token, null, 2));
       return NextResponse.json({ 
         ok: false, 
-        error: "Invalid token - missing user ID",
+        error: "Invalid token - missing user ID. Please logout and login again.",
         debug: {
           hasUid: !!(token as any).uid,
           hasId: !!(token as any).id,
@@ -112,12 +110,11 @@ export async function GET(req: Request) {
       }, { status: 400 });
     }
 
-    // Check if role exists
     if (!role) {
-      console.error("Token missing role. Token structure:", JSON.stringify(token, null, 2));
+      console.error("CRITICAL: No role found. Token:", JSON.stringify(token, null, 2));
       return NextResponse.json({ 
         ok: false, 
-        error: "Invalid token - missing role",
+        error: "Invalid token - missing role. Please logout and login again.",
         debug: {
           hasUid: !!(token as any).uid,
           hasId: !!(token as any).id,
@@ -129,6 +126,8 @@ export async function GET(req: Request) {
         }
       }, { status: 400 });
     }
+
+    console.log("Final values before token generation:", { role, sub, name, email });
 
     // Generate socket token
     const socketToken = signSocketToken({ role, sub, name });
