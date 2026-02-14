@@ -47,17 +47,27 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // Set all required fields explicitly
-        token.sub = (user as any).id || (user as any).sub; // User ID for NextAuth
-        token.email = (user as any).email || token.email; // Email
-        token.name = (user as any).name || (user as any).fullName || token.name; // Name
-        (token as any).role = (user as any).role; // Role
-        (token as any).uid = (user as any).id || (user as any).sub; // User ID (custom field)
-        (token as any).id = (user as any).id || (user as any).sub; // User ID (alternative)
-      }
-      // Ensure sub is always set, even on subsequent calls
-      if (!token.sub && (token as any).uid) {
-        token.sub = (token as any).uid;
+        // Initial login - set all fields from user object
+        const userId = (user as any).id || (user as any).sub || user.id;
+        token.sub = userId; // User ID for NextAuth (required field)
+        token.email = (user as any).email || user.email || token.email;
+        token.name = (user as any).name || (user as any).fullName || user.name || token.name;
+        (token as any).role = (user as any).role;
+        (token as any).uid = userId; // User ID (custom field)
+        (token as any).id = userId; // User ID (alternative)
+      } else {
+        // Subsequent requests - ensure sub is always set from any available source
+        if (!token.sub) {
+          // Try to get sub from other fields
+          token.sub = (token as any).uid || (token as any).id || token.sub;
+        }
+        // Ensure uid and id are also set if they're missing
+        if (!(token as any).uid && token.sub) {
+          (token as any).uid = token.sub;
+        }
+        if (!(token as any).id && token.sub) {
+          (token as any).id = token.sub;
+        }
       }
       return token;
     },

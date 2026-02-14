@@ -9,6 +9,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
+    // Log request headers for debugging
+    const cookieHeader = req.headers.get("cookie");
+    console.log("Socket token request - Cookie header present:", !!cookieHeader);
+
     // Get token from NextAuth
     const token = await getToken({ 
       req: req as any, 
@@ -17,8 +21,13 @@ export async function GET(req: Request) {
 
     if (!token) {
       console.error("No token found - user not authenticated");
+      console.error("Request URL:", req.url);
+      console.error("Cookie header:", cookieHeader ? "Present" : "Missing");
       return NextResponse.json({ ok: false, error: "Unauthorized - No session found" }, { status: 401 });
     }
+
+    // Log full token structure for debugging
+    console.log("Token retrieved successfully. Token keys:", Object.keys(token));
 
     // Extract fields from token
     const role = (token as any).role as "client" | "admin";
